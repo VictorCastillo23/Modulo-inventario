@@ -1,0 +1,6 @@
+com\mycompany\prueba1\JakartaRestConfiguration.class
+modelo\ProductosDAO.class
+controlador\ProductosController.class
+com\mycompany\prueba1\resources\JakartaEE10Resource.class
+config\Conexion.class
+modelo\Productos.class
