@@ -10,14 +10,17 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>JSP Page</title>
+        <title>Salida de productos</title>
     </head>
     <body>
+        <a href="LoginController?accion=salir">Cerrar sesión</a> |
+        <a href="ProductosController">Productos</a>
+        <c:if test="${permisos.ver_historico}">
+            | <a href="ProductosController?accion=historial">Historial de movimientos</a>
+        </c:if>
         <h2>Salida de productos</h2>
- 
-        <h1>Productos</h1>
-
         <br/><br/>
+        <c:if test="${permisos.sacar_inventario}">
         <form action="ProductosController" method="post">
 
             <input type="hidden" name="accion" value="guardarSalidas"/>
@@ -64,6 +67,10 @@
             </table>
 
         </form>
+        </c:if>
+        <c:if test="${!permisos.sacar_inventario}">
+            <p>No tiene permiso para sacar inventario.</p>
+        </c:if>
 
         <script>
             document.querySelectorAll('.cantidad-input').forEach(function(input) {

@@ -15,9 +15,21 @@
     </head>
     <body>
         <h1>Productos</h1>
-        <a href="ProductosController?accion=nuevo">Nuevo registro</a>
+        <c:if test="${sinPermiso}">
+            <p style="color: red;">No tiene permiso para realizar esa acción.</p>
+        </c:if>
+        <a href="LoginController?accion=salir">Cerrar sesión</a> |
+        <c:if test="${permisos.agregar_productos}">
+            <a href="ProductosController?accion=nuevo">Nuevo registro</a> |
+        </c:if>
+        <c:if test="${permisos.ver_salida}">
+            <a href="ProductosController?accion=salida_productos">Salida de productos</a> |
+        </c:if>
+        <c:if test="${permisos.ver_historico}">
+            <a href="ProductosController?accion=historial">Historial de movimientos</a>
+        </c:if>
         <br/><br/>
-        <a href="ProductosController?accion=salida_productos">Salida de productos</a>
+        <c:if test="${permisos.aumentar_inventario || permisos.baja_reactivar_producto}">
         <form action="ProductosController" method="post">
 
             <input type="hidden" name="accion" value="guardarCambios"/>
@@ -29,8 +41,8 @@
                     <tr>
                         <th>Nombre</th>
                         <th>Cantidad Actual</th>
-                        <th>Cantidad a agregar</th>
-                        <th>Estatus</th>
+                        <c:if test="${permisos.aumentar_inventario}"><th>Cantidad a agregar</th></c:if>
+                        <c:if test="${permisos.baja_reactivar_producto}"><th>Estatus</th></c:if>
                     </tr>
                 </thead>
                 <c:forEach var="producto" items="${lista}">
@@ -46,6 +58,7 @@
                             <c:out value="${producto.cantidad}"/>
                         </td>
                 
+                        <c:if test="${permisos.aumentar_inventario}">
                         <td>
                             <input
                                 type="number"
@@ -57,7 +70,12 @@
                                 required
                             />
                         </td>
+                        </c:if>
+                        <c:if test="${!permisos.aumentar_inventario}">
+                            <input type="hidden" name="cantidad[]" value="0"/>
+                        </c:if>
                 
+                        <c:if test="${permisos.baja_reactivar_producto}">
                         <td>
                             <select name="estatus[]" class="estatus-select"
                                     data-valor-inicial="${producto.estatus}">
@@ -65,11 +83,32 @@
                                 <option value="false" ${!producto.estatus ? 'selected' : ''}>Inactivo</option>
                             </select>
                         </td>
+                        </c:if>
+                        <c:if test="${!permisos.baja_reactivar_producto}">
+                            <input type="hidden" name="estatus[]" value="${producto.estatus}"/>
+                        </c:if>
                     </tr>
                 </c:forEach>
                    </table>
 
         </form>
+        </c:if>
+        <c:if test="${!permisos.aumentar_inventario && !permisos.baja_reactivar_producto}">
+            <table border="1" width="80%">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Cantidad Actual</th>
+                    </tr>
+                </thead>
+                <c:forEach var="producto" items="${lista}">
+                    <tr>
+                        <td><c:out value="${producto.nombre}"/></td>
+                        <td><c:out value="${producto.cantidad}"/></td>
+                    </tr>
+                </c:forEach>
+            </table>
+        </c:if>
 
         <script>
             document.querySelectorAll('.cantidad-input, .estatus-select').forEach(function(input) {
@@ -78,14 +117,12 @@
                     const fila = this.closest('tr');
                     const flag = fila.querySelector('.flag-modificado');
             
-                    // Para cantidad
                     if (this.classList.contains('cantidad-input')) {
                         if (parseInt(this.value, 10) > 0) {
                             flag.value = "true";
                         }
                     }
             
-                    // Para estatus
                     if (this.classList.contains('estatus-select')) {
                         const inicial = this.getAttribute('data-valor-inicial');
                         if (this.value !== inicial) {

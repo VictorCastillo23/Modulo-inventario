@@ -5,13 +5,22 @@
 --%>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Almacen</title>
+        <title>Almacén - Nuevo registro</title>
     </head>
     <body>
+        <a href="LoginController?accion=salir">Cerrar sesión</a> |
+        <a href="ProductosController">Productos</a>
+        <c:if test="${permisos.ver_salida}">
+            | <a href="ProductosController?accion=salida_productos">Salida de productos</a>
+        </c:if>
+        <c:if test="${permisos.ver_historico}">
+            | <a href="ProductosController?accion=historial">Historial</a>
+        </c:if>
         <h2>Nuevo Registro</h2>
         <br/>
         <form action="ProductosController?accion=insertar" method="POST" autocomplete="off">

@@ -3,4 +3,12 @@ modelo\ProductosDAO.class
 controlador\ProductosController.class
 com\mycompany\prueba1\resources\JakartaEE10Resource.class
 config\Conexion.class
+modelo\HistoricoDAO.class
+modelo\UsuarioDAO.class
+modelo\PermisoDAO.class
+filtro\AuthFilter.class
+modelo\Historico.class
+controlador\LoginController.class
 modelo\Productos.class
+modelo\HistorialRegistro.class
+modelo\Usuario.class

@@ -3,6 +3,7 @@ package modelo;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.util.List;
 import config.Conexion;
 import java.util.ArrayList;
@@ -79,34 +80,6 @@ public class ProductosDAO {
         }
 
     }
-/*
-    public Productos mostrarProducto(int idProducto) {
-
-        PreparedStatement ps;
-        ResultSet rs;
-
-        try {
-            ps = conexion.prepareStatement("SELECT idProducto,nombre,cantidad,estatus FROM productos where idProducto = ?");
-            ps.setInt(1, idProducto);
-
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                int id = rs.getInt("idProducto");
-                String nombre = rs.getString("nombre");
-                int cantidad = rs.getInt("cantidad");
-                boolean estatus = rs.getBoolean("estatus");
-
-                return new Productos(id, nombre, cantidad, estatus);
-            }
-            return null;
-
-        } catch (Exception e) {
-            System.out.println(e.toString());
-            return null;
-        }
-
-    }
-*/
     public boolean insertar(Productos producto) {
 
         PreparedStatement ps;
@@ -130,26 +103,24 @@ public class ProductosDAO {
             return false;
         }
     }
-/*
-    public boolean actualizar(Productos producto) {
 
-        PreparedStatement ps;
-
-        try {
-            ps = conexion.prepareStatement("UPDATE productos SET cantidad=?,estatus=? where idProducto=? ");
-
-            ps.setInt(1, producto.getCantidad());
-            ps.setBoolean(2, producto.isEstatus());
-            ps.setInt(3, producto.getId());
-
-            ps.execute();
-            return true;
+    public int insertarRetornarId(Productos producto) {
+        String sql = "INSERT INTO productos (nombre, cantidad, estatus) VALUES (?, ?, ?)";
+        try (PreparedStatement ps = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setString(1, producto.getNombre());
+            ps.setInt(2, producto.getCantidad());
+            ps.setBoolean(3, producto.isEstatus());
+            ps.executeUpdate();
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
         } catch (Exception e) {
-            System.out.println(e.toString());
-            return false;
+            System.out.println("ERROR al insertar producto: " + e.toString());
         }
+        return 0;
     }
-*/
+
     public boolean cambiarEstatus(int idProducto, boolean estatus) {
 
         PreparedStatement ps;
