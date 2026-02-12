@@ -33,7 +33,11 @@ public class ProductosController extends HttpServlet {
 
         accion = request.getParameter("accion");
         Map<String, Boolean> permisos = obtenerPermisos(request);
+        if (accion != null) {
 
+            System.out.println("la accion es " + accion.toString());
+
+        }
         if (accion == null || accion.isEmpty()) {
             if (!tienePermiso(permisos, "ver_inventario")) {
                 redirigirSinPermiso(request, response);
@@ -77,8 +81,10 @@ public class ProductosController extends HttpServlet {
             request.setAttribute("lista", listaProductos);
             dispatcher = request.getRequestDispatcher("Productos/index.jsp");
         } else if ("guardarCambios".equals(request.getParameter("accion"))) {
+            System.out.println("Entrando en guardr camios");
             if (!tienePermiso(permisos, "aumentar_inventario") && !tienePermiso(permisos, "baja_reactivar_producto")) {
                 redirigirSinPermiso(request, response);
+                            System.out.println("no tiene permisos de guardr camios");
                 return;
             }
 
@@ -94,7 +100,7 @@ public class ProductosController extends HttpServlet {
                 boolean nuevoEstatus = Boolean.parseBoolean(estatus[i]);
                 boolean fueModificado = Boolean.parseBoolean(modificados[i]);
 
-                //System.out.println("ID: " + id +" | Retiro: " + cantidadAgregar +" | Estatus: " + nuevoEstatus +" | Modificado: " + fueModificado);
+                System.out.println("ID: " + id +" | Retiro: " + cantidadAgregar +" | Estatus: " + nuevoEstatus +" | Modificado: " + fueModificado);
 
                 if (fueModificado) {
                     if (cantidadAgregar > 0 && Boolean.TRUE.equals(permisos.get("aumentar_inventario"))) {
