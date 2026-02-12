@@ -33,6 +33,7 @@
         <strong>Atención.</strong> No tiene permiso para realizar esa acción.
     </div>
 </c:if>
+<div id="uxAlert" class="alert alert-danger d-none mb-3" role="alert"></div>
 
 <div class="card card-soft">
     <div class="card-header py-3">
@@ -108,12 +109,12 @@
 
                                         <div class="form-check form-switch">
                                             <input class="form-check-input estatus-input"
-                                            type="checkbox"
-                                            data-index="${producto.id}"
-                                            data-valor-inicial="${producto.estatus ? 'true' : 'false'}"
-                                            ${producto.estatus ? 'checked' : ''}>
-                                     <input type="hidden" name="estatus[]" value="${producto.estatus}" class="estatus-hidden">
-                                     
+                                                   type="checkbox"
+                                                   data-index="${producto.id}"
+                                                   data-valor-inicial="${producto.estatus ? 'true' : 'false'}"
+                                                   ${producto.estatus ? 'checked' : ''}>
+                                            <input type="hidden" name="estatus[]" value="${producto.estatus}" class="estatus-hidden">
+
                                         </div>
                                     </div>
                                 </td>                                                             
@@ -155,50 +156,63 @@
 </div>
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-    
+
+        let uxAlertTimeout = null;
+
         function showUxAlert(message) {
             const box = document.getElementById('uxAlert');
             if (!box) return;
-    
+
             box.textContent = message;
             box.classList.remove('d-none');
             box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            if (uxAlertTimeout) {
+                clearTimeout(uxAlertTimeout);
+            }
+
+            uxAlertTimeout = setTimeout(function () {
+                box.classList.add('d-none');
+            }, 2000);
         }
-    
+
+
         function actualizarEstadoVisual(fila, checkbox) {
             const texto = fila.querySelector('.status-text');
             const punto = fila.querySelector('.status-dot');
-    
-            if (!texto || !punto) return;
-    
+
+            if (!texto || !punto)
+                return;
+
             if (checkbox.checked) {
                 texto.textContent = "Activo";
                 texto.classList.remove("text-danger");
                 texto.classList.add("text-success");
-    
+
                 punto.classList.remove("status-dot--off");
                 punto.classList.add("status-dot--ok");
             } else {
                 texto.textContent = "Inactivo";
                 texto.classList.remove("text-success");
                 texto.classList.add("text-danger");
-    
+
                 punto.classList.remove("status-dot--ok");
                 punto.classList.add("status-dot--off");
             }
         }
-    
+
         function evaluarFila(fila) {
-    
+
             const cantidadInput = fila.querySelector('.cantidad-input');
             const estatusInput = fila.querySelector('.estatus-input');
             const estatusHidden = fila.querySelector('.estatus-hidden');
             const flag = fila.querySelector('.flag-modificado');
-    
-            if (!flag) return;
-    
+
+            if (!flag)
+                return;
+
             let huboCambio = false;
-    
+
             if (cantidadInput) {
                 const valor = parseInt(cantidadInput.value, 10) || 0;
                 if (valor > 0) {
@@ -210,56 +224,64 @@
                 const valorInicial = String(estatusInput.dataset.valorInicial).trim().toLowerCase() === "true";
 
                 const valorActual = estatusInput.checked;
-    
+
 
                 if (estatusHidden) {
                     estatusHidden.value = valorActual;
                 }
-    
+
                 if (valorActual !== valorInicial) {
                     huboCambio = true;
                 }
-    
+
                 actualizarEstadoVisual(fila, estatusInput);
             }
-    
+
             flag.value = huboCambio ? "true" : "false";
             fila.classList.toggle("table-warning", huboCambio);
         }
-    
-        document.querySelectorAll('.cantidad-input, .estatus-input').forEach(function (input) {
-    
+
+        document.querySelectorAll('.cantidad-input, .estatus-input').forEach(function (input, index) {
             input.addEventListener('input', function () {
-    
                 const fila = this.closest('tr');
-    
+                const productoId = fila.querySelector('input[name="id[]"]')?.value;
                 if (this.classList.contains('cantidad-input')) {
                     if (this.value.startsWith('-')) {
                         showUxAlert('No puede reducir la cantidad. Solo se permite incrementar el valor actual.');
                         this.value = 0;
                     }
                 }
-    
                 evaluarFila(fila);
             });
-    
+
             input.addEventListener('change', function () {
-    
+
                 const fila = this.closest('tr');
-    
+                const productoId = fila.querySelector('input[name="id[]"]')?.value;
+
                 if (this.classList.contains('cantidad-input')) {
+
                     let valor = Number(this.value);
+
                     if (isNaN(valor) || valor < 0) {
                         showUxAlert('Cantidad inválida.');
                         this.value = 0;
                     }
                 }
-    
+
+                if (this.classList.contains('estatus-input')) {
+                    console.log("Estado checked actual:", this.checked);
+                    console.log("Valor inicial dataset:", this.dataset.valorInicial);
+                }
+
+                console.log("Evaluando fila...");
                 evaluarFila(fila);
+                console.groupEnd();
             });
+
         });
-    
+
     });
-    </script>
-    
+</script>
+
 <jsp:include page="/WEB-INF/jspf/layout-bottom.jspf" />

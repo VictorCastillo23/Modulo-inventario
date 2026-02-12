@@ -21,6 +21,7 @@
         </c:if>
     </div>
 </div>
+<div id="uxAlert" class="alert alert-danger d-none mb-3" role="alert"></div>
 
 <div class="card card-soft">
     <div class="card-header py-3">
@@ -83,12 +84,23 @@
 </div>
 
 <script>
+        let uxAlertTimeout = null;
+
     function showUxAlert(message) {
-        var box = document.getElementById('uxAlert');
+        const box = document.getElementById('uxAlert');
         if (!box) return;
+
         box.textContent = message;
         box.classList.remove('d-none');
         box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+        if (uxAlertTimeout) {
+            clearTimeout(uxAlertTimeout);
+        }
+
+        uxAlertTimeout = setTimeout(function () {
+            box.classList.add('d-none');
+        }, 2000);
     }
 
     document.querySelectorAll('.cantidad-input').forEach(function(input) {

@@ -33,11 +33,7 @@ public class ProductosController extends HttpServlet {
 
         accion = request.getParameter("accion");
         Map<String, Boolean> permisos = obtenerPermisos(request);
-        if (accion != null) {
 
-            System.out.println("la accion es " + accion.toString());
-
-        }
         if (accion == null || accion.isEmpty()) {
             if (!tienePermiso(permisos, "ver_inventario")) {
                 redirigirSinPermiso(request, response);
@@ -63,7 +59,7 @@ public class ProductosController extends HttpServlet {
             }
 
             String nombre = request.getParameter("nombre");
-            int cantidad = Integer.parseInt(request.getParameter("cantidad"));
+            int cantidad = 0;// Integer.parseInt(request.getParameter("cantidad"));
             boolean estatus = Boolean.parseBoolean(request.getParameter("estatus"));
 
             Productos producto = new Productos(0, nombre, cantidad, estatus);

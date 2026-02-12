@@ -30,7 +30,7 @@ public class ProductosDAO {
 
         try {
 
-            ps = conexion.prepareStatement("SELECT idProducto,nombre,cantidad,estatus FROM productos");
+            ps = conexion.prepareStatement("SELECT idProducto,nombre,cantidad,estatus FROM productos order by estatus desc");
 
             rs = ps.executeQuery();
             while (rs.next()) {

@@ -29,11 +29,6 @@
                     <div class="invalid-feedback">El nombre es obligatorio.</div>
                 </div>
 
-                <div class="col-12 col-md-6">
-                    <label for="cantidad" class="form-label">Cantidad</label>
-                    <input id="cantidad" name="cantidad" type="number" min="0" class="form-control" required />
-                    <div class="invalid-feedback">Ingresa una cantidad válida (>= 0).</div>
-                </div>
 
                 <div class="col-12 col-md-6">
                     <label for="estatus" class="form-label">Estatus</label>

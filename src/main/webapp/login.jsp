@@ -14,7 +14,6 @@
     <div class="card card-soft auth-card">
         <div class="card-body p-4 p-md-5">
             <div class="d-flex align-items-center gap-2 mb-3">
-                <span class="brand-badge">A</span>
                 <div>
                     <div class="fw-semibold">Almacén</div>
                     <div class="text-secondary small">Acceso al sistema</div>
@@ -43,9 +42,7 @@
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100 btn-erp">Entrar</button>
-                <div class="form-help mt-3">
-                    Si tienes problemas para acceder, verifica tus credenciales.
-                </div>
+
             </form>
         </div>
     </div>
