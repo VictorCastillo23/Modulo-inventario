@@ -8,12 +8,14 @@ public class Productos {
     private int id, cantidad;
     private String nombre;
     private boolean estatus;
+    private Integer idCategoria;
 
-    public Productos(int id,String nombre, int cantidad,  boolean estatus) {
+    public Productos(int id,String nombre, int cantidad,  boolean estatus, Integer idCategoria) {
         this.id = id;
         this.cantidad = cantidad;
         this.nombre = nombre;
         this.estatus = estatus;
+        this.idCategoria = idCategoria;
     }
 
     public int getId() {
@@ -46,6 +48,14 @@ public class Productos {
 
     public void setEstatus(boolean estatus) {
         this.estatus = estatus;
+    }
+
+    public Integer getIdCategoria() {
+        return idCategoria;
+    }
+
+    public void setIdCategoria(Integer idCategoria) {
+        this.idCategoria = idCategoria;
     }
 
 

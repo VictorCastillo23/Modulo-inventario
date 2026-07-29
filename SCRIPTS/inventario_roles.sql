@@ -32,11 +32,21 @@ CREATE TABLE Usuarios (
     FOREIGN KEY (idRol) REFERENCES Roles(idRol)
 );
 
+CREATE TABLE Categorias (
+    idCategoria INT(4) AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(50) NOT NULL,
+    descripcion VARCHAR(150),
+    estatus INT(1) NOT NULL DEFAULT 1
+);
+
 CREATE TABLE Productos (
     idProducto INT(6) AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     cantidad INT(6) NOT NULL DEFAULT 0,
-    estatus INT(1) NOT NULL
+    estatus INT(1) NOT NULL,
+    idCategoria INT(4) NULL,
+
+    FOREIGN KEY (idCategoria) REFERENCES Categorias(idCategoria)
 );
 
 CREATE TABLE Historico (
@@ -54,8 +64,9 @@ INSERT INTO Roles (nombre) VALUES
 ('Administrador'),('Almacenista');
 
 -- Permission names MUST exactly match seguridad.Permisos and the EL literals
--- read directly by Productos/index.jsp, Productos/modificar.jsp, and
--- Productos/historial.jsp (see seguridad/Permisos.java Javadoc).
+-- read directly by Productos/index.jsp, Productos/modificar.jsp,
+-- Productos/historial.jsp, and Categorias/index.jsp (see
+-- seguridad/Permisos.java Javadoc).
 INSERT INTO Permisos (nombre, descripcion) VALUES
 ('ver_inventario', 'Permite ver el módulo de inventario'),
 ('agregar_productos', 'Permite agregar nuevos productos'),
@@ -63,7 +74,9 @@ INSERT INTO Permisos (nombre, descripcion) VALUES
 ('baja_reactivar_producto', 'Permite dar de baja o reactivar productos'),
 ('ver_salida', 'Permite ver el módulo de salida de productos'),
 ('sacar_inventario', 'Permite registrar salidas de inventario'),
-('ver_historico', 'Permite ver el historial de movimientos');
+('ver_historico', 'Permite ver el historial de movimientos'),
+('ver_categorias', 'Permite ver y filtrar por categorías de producto'),
+('gestionar_categorias', 'Permite crear, editar y dar de baja categorías');
 
 INSERT INTO Roles_Permisos (idRol, idPermisos) VALUES
 (1, 1),(1, 2),(1, 3),(1, 4),(1, 7);
@@ -71,12 +84,24 @@ INSERT INTO Roles_Permisos (idRol, idPermisos) VALUES
 INSERT INTO Roles_Permisos (idRol, idPermisos) VALUES
 (2, 1),(2, 5),(2, 6);
 
+INSERT INTO Roles_Permisos (idRol, idPermisos) VALUES
+(1, 8),(1, 9);
+
+INSERT INTO Roles_Permisos (idRol, idPermisos) VALUES
+(2, 8);
+
 -- Passwords below are BCrypt hashes (cost 10) of the demo plaintext
 -- passwords 'admin' and 'almacen', generated with seguridad.PasswordHasher.
 -- The plaintext demo credentials themselves are unchanged (see README.md).
 INSERT INTO Usuarios (nombre, correo, contraseña, idRol, estatus) VALUES
 ('Victor', 'admin', '$2a$10$1i90KtcPfXIlpRyYdEsj9e8A4HAIar7kJ8e9TreX/MYZHmsZrBK02', 1, 1),
 ('JAVIER', 'almacen', '$2a$10$wY1e94oBVkJC9gALVeZvfeSfLCSdxGgxffkBmKidll7y9XnjGP/aa', 2, 1);
+
+INSERT INTO Categorias (nombre, descripcion, estatus) VALUES
+('Electrónica', 'Dispositivos y componentes electrónicos', 1),
+('Papelería', 'Insumos de oficina y papelería', 1),
+('Limpieza', 'Productos de limpieza e higiene', 1),
+('Herramientas', 'Herramientas manuales y eléctricas', 1);
 
 INSERT INTO Productos (nombre, cantidad, estatus) VALUES
 ('Producto 01', 0, 1),('Producto 02', 0, 1),('Producto 03', 0, 1),('Producto 04', 0, 1),
