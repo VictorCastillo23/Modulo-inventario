@@ -38,4 +38,34 @@
         </user-data-constraint>
     </security-constraint>
     -->
+
+    <!--
+        SEC-08 — generic catch-all error page. Any uncaught exception
+        (including config.Conexion's IllegalStateException on missing
+        DB_URL/DB_USER/DB_PASSWORD, SEC-01) and the error statuses used by
+        AuthFilter's CSRF check (403) and InventoryRequestValidator's
+        rejections (400), plus the GET/POST split's unknown-accion branch
+        (405) and a plain 404, all render this single generic page instead of
+        the Tomcat default stack-trace page.
+    -->
+    <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>400</error-code>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>405</error-code>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
 </web-app>
