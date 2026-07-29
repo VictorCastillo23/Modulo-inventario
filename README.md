@@ -45,11 +45,20 @@ Configuración del Servidor
 
 4. Configuración de la Conexión a Base de Datos
 
-En la clase de conexión:
+La clase de conexión (`config.Conexion`) ya NO contiene credenciales
+hardcodeadas. Debe configurar las siguientes variables de entorno (o
+propiedades de sistema, como fallback, ej. `-DDB_URL=...` en la
+configuración de ejecución del servidor en NetBeans) antes de desplegar:
 
-  Connection conexion = DriverManager.getConnection(
-    "jdbc:mysql://localhost:3306/inventario_roles?serverTimezone=UTC", "root", "admin"
-  );
+| Variable      | Ejemplo                                                        |
+| ------------- | --------------------------------------------------------------- |
+| `DB_URL`      | `jdbc:mysql://localhost:3306/inventario_roles?serverTimezone=UTC` |
+| `DB_USER`     | `root`                                                           |
+| `DB_PASSWORD` | `admin`                                                          |
+
+Si falta cualquiera de las tres, el despliegue falla inmediatamente
+(`config.StartupConfigListener` lo valida al iniciar el contexto) en lugar
+de fallar silenciosamente en la primera consulta a la base de datos.
 
 5. Verificar que el driver esté agregado en:
 

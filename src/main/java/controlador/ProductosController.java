@@ -14,6 +14,7 @@ import java.util.Map;
 import modelo.HistoricoDAO;
 import modelo.Productos;
 import modelo.ProductosDAO;
+import seguridad.Permisos;
 
 /**
  *
@@ -35,7 +36,7 @@ public class ProductosController extends HttpServlet {
         Map<String, Boolean> permisos = obtenerPermisos(request);
 
         if (accion == null || accion.isEmpty()) {
-            if (!tienePermiso(permisos, "ver_inventario")) {
+            if (!tienePermiso(permisos, Permisos.VER_INVENTARIO)) {
                 redirigirSinPermiso(request, response);
                 return;
             }
@@ -47,13 +48,13 @@ public class ProductosController extends HttpServlet {
             request.setAttribute("lista", listaProductos);
 
         } else if ("nuevo".equals(accion)) {
-            if (!tienePermiso(permisos, "agregar_productos")) {
+            if (!tienePermiso(permisos, Permisos.AGREGAR_PRODUCTOS)) {
                 redirigirSinPermiso(request, response);
                 return;
             }
             dispatcher = request.getRequestDispatcher("Productos/nuevo.jsp");
         } else if ("insertar".equals(accion)) {
-            if (!tienePermiso(permisos, "agregar_productos")) {
+            if (!tienePermiso(permisos, Permisos.AGREGAR_PRODUCTOS)) {
                 redirigirSinPermiso(request, response);
                 return;
             }
@@ -78,7 +79,7 @@ public class ProductosController extends HttpServlet {
             dispatcher = request.getRequestDispatcher("Productos/index.jsp");
         } else if ("guardarCambios".equals(request.getParameter("accion"))) {
             System.out.println("Entrando en guardr camios");
-            if (!tienePermiso(permisos, "aumentar_inventario") && !tienePermiso(permisos, "baja_reactivar_producto")) {
+            if (!tienePermiso(permisos, Permisos.AUMENTAR_INVENTARIO) && !tienePermiso(permisos, Permisos.BAJA_REACTIVAR_PRODUCTO)) {
                 redirigirSinPermiso(request, response);
                             System.out.println("no tiene permisos de guardr camios");
                 return;
@@ -99,7 +100,7 @@ public class ProductosController extends HttpServlet {
                 System.out.println("ID: " + id +" | Retiro: " + cantidadAgregar +" | Estatus: " + nuevoEstatus +" | Modificado: " + fueModificado);
 
                 if (fueModificado) {
-                    if (cantidadAgregar > 0 && Boolean.TRUE.equals(permisos.get("aumentar_inventario"))) {
+                    if (cantidadAgregar > 0 && Boolean.TRUE.equals(permisos.get(Permisos.AUMENTAR_INVENTARIO))) {
                         productosDAO.agregarCantidad(id, cantidadAgregar);
                         Integer idUsuario = obtenerIdUsuario(request);
                         if (idUsuario != null) {
@@ -107,7 +108,7 @@ public class ProductosController extends HttpServlet {
                             historicoDAO.insertar(idUsuario, id, "Entrada", cantidadAgregar);
                         }
                     }
-                    if (Boolean.TRUE.equals(permisos.get("baja_reactivar_producto"))) {
+                    if (Boolean.TRUE.equals(permisos.get(Permisos.BAJA_REACTIVAR_PRODUCTO))) {
                         productosDAO.cambiarEstatus(id, nuevoEstatus);
                     }
                 }
@@ -119,7 +120,7 @@ public class ProductosController extends HttpServlet {
             dispatcher = request.getRequestDispatcher("Productos/index.jsp");
 
         } else if ("salida_productos".equals(accion)) {
-            if (!tienePermiso(permisos, "ver_salida")) {
+            if (!tienePermiso(permisos, Permisos.VER_SALIDA)) {
                 redirigirSinPermiso(request, response);
                 return;
             }
@@ -127,7 +128,7 @@ public class ProductosController extends HttpServlet {
             request.setAttribute("lista", listaProductos);
             dispatcher = request.getRequestDispatcher("Productos/modificar.jsp");
         } else if ("guardarSalidas".equals(accion)) {
-            if (!tienePermiso(permisos, "sacar_inventario")) {
+            if (!tienePermiso(permisos, Permisos.SACAR_INVENTARIO)) {
                 redirigirSinPermiso(request, response);
                 return;
             }
@@ -155,7 +156,7 @@ public class ProductosController extends HttpServlet {
             request.setAttribute("lista", listaProductos);
             dispatcher = request.getRequestDispatcher("Productos/modificar.jsp");
         } else if ("historial".equals(accion)) {
-            if (!tienePermiso(permisos, "ver_historico")) {
+            if (!tienePermiso(permisos, Permisos.VER_HISTORICO)) {
                 redirigirSinPermiso(request, response);
                 return;
             }

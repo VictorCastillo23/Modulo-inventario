@@ -13,6 +13,7 @@
         <junit.version>5.10.2</junit.version>
         <assertj.version>3.25.3</assertj.version>
         <surefire.plugin.version>3.2.5</surefire.plugin.version>
+        <bcrypt.version>0.10.2</bcrypt.version>
     </properties>
 
     <dependencyManagement>
@@ -51,6 +52,12 @@
             <groupId>org.glassfish.web</groupId>
             <artifactId>jakarta.servlet.jsp.jstl</artifactId>
             <version>3.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>at.favre.lib</groupId>
+            <artifactId>bcrypt</artifactId>
+            <version>${bcrypt.version}</version>
         </dependency>
 
         <dependency>

@@ -25,7 +25,7 @@ CREATE TABLE Usuarios (
     idUsuario INT(6) AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL,
     correo VARCHAR(50) NOT NULL,
-    contraseña VARCHAR(25) NOT NULL,
+    contraseña VARCHAR(60) NOT NULL,
     idRol INT(2) NOT NULL,
     estatus INT(1) NOT NULL,
 
@@ -53,14 +53,17 @@ CREATE TABLE Historico (
 INSERT INTO Roles (nombre) VALUES
 ('Administrador'),('Almacenista');
 
+-- Permission names MUST exactly match seguridad.Permisos and the EL literals
+-- read directly by Productos/index.jsp, Productos/modificar.jsp, and
+-- Productos/historial.jsp (see seguridad/Permisos.java Javadoc).
 INSERT INTO Permisos (nombre, descripcion) VALUES
-('VER_INVENTARIO', 'Permite ver el módulo de inventario'),
-('AGREGAR_PRODUCTO', 'Permite agregar nuevos productos'),
-('AUMENTAR_INVENTARIO', 'Permite registrar entradas de inventario'),
-('BAJA_REACTIVAR_PRODUCTO', 'Permite dar de baja o reactivar productos'),
-('VER_SALIDA_PRODUCTOS', 'Permite ver el módulo de salida de productos'),
-('SACAR_INVENTARIO', 'Permite registrar salidas de inventario'),
-('VER_HISTORIAL', 'Permite ver el historial de movimientos');
+('ver_inventario', 'Permite ver el módulo de inventario'),
+('agregar_productos', 'Permite agregar nuevos productos'),
+('aumentar_inventario', 'Permite registrar entradas de inventario'),
+('baja_reactivar_producto', 'Permite dar de baja o reactivar productos'),
+('ver_salida', 'Permite ver el módulo de salida de productos'),
+('sacar_inventario', 'Permite registrar salidas de inventario'),
+('ver_historico', 'Permite ver el historial de movimientos');
 
 INSERT INTO Roles_Permisos (idRol, idPermisos) VALUES
 (1, 1),(1, 2),(1, 3),(1, 4),(1, 7);
@@ -68,9 +71,12 @@ INSERT INTO Roles_Permisos (idRol, idPermisos) VALUES
 INSERT INTO Roles_Permisos (idRol, idPermisos) VALUES
 (2, 1),(2, 5),(2, 6);
 
+-- Passwords below are BCrypt hashes (cost 10) of the demo plaintext
+-- passwords 'admin' and 'almacen', generated with seguridad.PasswordHasher.
+-- The plaintext demo credentials themselves are unchanged (see README.md).
 INSERT INTO Usuarios (nombre, correo, contraseña, idRol, estatus) VALUES
-('Victor', 'admin', 'admin', 1, 1),
-('JAVIER', 'almacen', 'almacen', 2, 1);
+('Victor', 'admin', '$2a$10$1i90KtcPfXIlpRyYdEsj9e8A4HAIar7kJ8e9TreX/MYZHmsZrBK02', 1, 1),
+('JAVIER', 'almacen', '$2a$10$wY1e94oBVkJC9gALVeZvfeSfLCSdxGgxffkBmKidll7y9XnjGP/aa', 2, 1);
 
 INSERT INTO Productos (nombre, cantidad, estatus) VALUES
 ('Producto 01', 0, 1),('Producto 02', 0, 1),('Producto 03', 0, 1),('Producto 04', 0, 1),
