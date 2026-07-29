@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpSession;
 import modelo.PermisoDAO;
 import modelo.Usuario;
 import modelo.UsuarioDAO;
+import seguridad.CsrfTokens;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -65,7 +66,19 @@ public class LoginController extends HttpServlet {
         Usuario u = usuarioDAO.validar(usuario.trim(), clave);
 
         if (u != null) {
+            // SEC-05: invalidate any pre-login session and create a fresh one before
+            // trusting anything in it. This is strictly stronger than
+            // request.changeSessionId() — that call only rotates the session id while
+            // keeping any attacker-planted pre-login attributes; invalidate+recreate
+            // discards the whole session state, closing session-fixation attacks
+            // where an attacker seeds a victim's browser with a known session id
+            // before they authenticate.
+            HttpSession oldSession = request.getSession(false);
+            if (oldSession != null) {
+                oldSession.invalidate();
+            }
             HttpSession session = request.getSession(true);
+
             session.setAttribute("usuario", u.getUsuario());
             session.setAttribute("idUsuario", u.getId());
             session.setAttribute("idRol", u.getIdRol());
@@ -76,6 +89,12 @@ public class LoginController extends HttpServlet {
                 permisos.put(p, true);
             }
             session.setAttribute("permisos", permisos);
+            // Minted into the NEW session, after invalidate+recreate above — minting
+            // it before invalidation would discard the token along with the rest of
+            // the old session state (see Phase 2a scope note for why this line exists
+            // at all: it is the minimal prerequisite for AuthFilter's CSRF check to
+            // have anything to validate against).
+            session.setAttribute(CsrfTokens.SESSION_ATTRIBUTE, CsrfTokens.generate());
             response.sendRedirect(request.getContextPath() + "/ProductosController");
         } else {
             request.setAttribute("error", "Usuario o contraseña incorrectos.");
