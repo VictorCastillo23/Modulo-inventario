@@ -13,12 +13,6 @@
     </div>
     <div class="page-actions d-flex flex-wrap gap-2">
         <a class="btn btn-outline-secondary btn-sm btn-erp" href="ProductosController">Volver</a>
-        <c:if test="${permisos.ver_salida}">
-            <a class="btn btn-outline-primary btn-sm btn-erp" href="ProductosController?accion=salida_productos">Salidas</a>
-        </c:if>
-        <c:if test="${permisos.agregar_productos}">
-            <a class="btn btn-primary btn-sm btn-erp" href="ProductosController?accion=nuevo">Nuevo producto</a>
-        </c:if>
     </div>
 </div>
 
@@ -28,11 +22,12 @@
             <input type="hidden" name="accion" value="historial"/>
             <div class="col-12 col-md-4">
                 <label for="tipo" class="form-label mb-1">Tipo de movimiento</label>
-                <select name="tipo" id="tipo" class="form-select" onchange="this.form.submit()">
+                <select name="tipo" id="tipo" class="form-select">
                     <option value="" ${empty tipoFiltro ? 'selected' : ''}>Todos</option>
                     <option value="Entrada" ${tipoFiltro == 'Entrada' ? 'selected' : ''}>Entrada</option>
                     <option value="Salida" ${tipoFiltro == 'Salida' ? 'selected' : ''}>Salida</option>
                 </select>
+                <div id="filtroEstado" class="visually-hidden" aria-live="polite"></div>
             </div>
             <div class="col-12 col-md-8 text-md-end">
                 <div class="form-help">El filtro se aplica automáticamente al cambiar el valor.</div>
@@ -82,5 +77,16 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('tipo').addEventListener('change', function () {
+        var estado = document.getElementById('filtroEstado');
+        if (estado) {
+            estado.textContent = 'Filtrando resultados…';
+        }
+        this.disabled = true;
+        this.form.submit();
+    });
+</script>
 
 <jsp:include page="/WEB-INF/jspf/layout-bottom.jspf" />
