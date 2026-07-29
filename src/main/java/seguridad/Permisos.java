@@ -19,6 +19,7 @@ package seguridad;
  *   <li>{@code Productos/index.jsp}</li>
  *   <li>{@code Productos/salida.jsp}</li>
  *   <li>{@code Productos/historial.jsp}</li>
+ *   <li>{@code Categorias/index.jsp}</li>
  * </ul>
  */
 public final class Permisos {
@@ -30,6 +31,8 @@ public final class Permisos {
     public static final String VER_SALIDA = "ver_salida";
     public static final String SACAR_INVENTARIO = "sacar_inventario";
     public static final String VER_HISTORICO = "ver_historico";
+    public static final String VER_CATEGORIAS = "ver_categorias";
+    public static final String GESTIONAR_CATEGORIAS = "gestionar_categorias";
 
     private Permisos() {
     }

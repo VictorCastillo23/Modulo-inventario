@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Map;
+import modelo.CategoriaDAO;
 import modelo.HistoricoDAO;
 import modelo.Productos;
 import modelo.ProductosDAO;
@@ -58,6 +59,7 @@ public class ProductosController extends HttpServlet {
                 redirigirSinPermiso(request, response);
                 return;
             }
+            request.setAttribute("listaCategorias", new CategoriaDAO().listarActivas());
             dispatcher = request.getRequestDispatcher("Productos/nuevo.jsp");
         } else if ("salida_productos".equals(accion)) {
             if (!tienePermiso(permisos, Permisos.VER_SALIDA)) {
@@ -111,8 +113,9 @@ public class ProductosController extends HttpServlet {
             String nombre = request.getParameter("nombre");
             int cantidad = 0;// Integer.parseInt(request.getParameter("cantidad"));
             boolean estatus = Boolean.parseBoolean(request.getParameter("estatus"));
+            Integer idCategoria = parseNullableInt(request.getParameter("idCategoria"));
 
-            Productos producto = new Productos(0, nombre, cantidad, estatus);
+            Productos producto = new Productos(0, nombre, cantidad, estatus, idCategoria);
 
             int idProducto = productosDAO.insertarRetornarId(producto);
             if (idProducto > 0) {
@@ -243,6 +246,17 @@ public class ProductosController extends HttpServlet {
 
     private void redirigirSinPermiso(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.sendRedirect(request.getContextPath() + "/ProductosController?sinPermiso=1");
+    }
+
+    private Integer parseNullableInt(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+        try {
+            return Integer.valueOf(raw.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     @Override

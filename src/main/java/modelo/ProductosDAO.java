@@ -30,7 +30,7 @@ public class ProductosDAO {
 
         try {
 
-            ps = conexion.prepareStatement("SELECT idProducto,nombre,cantidad,estatus FROM productos order by estatus desc");
+            ps = conexion.prepareStatement("SELECT idProducto,nombre,cantidad,estatus,idCategoria FROM productos order by estatus desc");
 
             rs = ps.executeQuery();
             while (rs.next()) {
@@ -38,8 +38,9 @@ public class ProductosDAO {
                 String nombre = rs.getString("nombre");
                 int cantidad = rs.getInt("cantidad");
                 boolean estatus = rs.getBoolean("estatus");
+                Integer idCategoria = rs.getObject("idCategoria", Integer.class);
 
-                Productos producto = new Productos(id, nombre, cantidad, estatus);
+                Productos producto = new Productos(id, nombre, cantidad, estatus, idCategoria);
                 lista.add(producto);
             }
 
@@ -59,7 +60,7 @@ public class ProductosDAO {
 
         try {
 
-            ps = conexion.prepareStatement("SELECT idProducto,nombre,cantidad,estatus FROM productos where estatus = 1");
+            ps = conexion.prepareStatement("SELECT idProducto,nombre,cantidad,estatus,idCategoria FROM productos where estatus = 1");
 
             rs = ps.executeQuery();
             while (rs.next()) {
@@ -67,8 +68,9 @@ public class ProductosDAO {
                 String nombre = rs.getString("nombre");
                 int cantidad = rs.getInt("cantidad");
                 boolean estatus = rs.getBoolean("estatus");
+                Integer idCategoria = rs.getObject("idCategoria", Integer.class);
 
-                Productos producto = new Productos(id, nombre, cantidad, estatus);
+                Productos producto = new Productos(id, nombre, cantidad, estatus, idCategoria);
                 System.out.println(producto.getNombre());
                 lista.add(producto);
             }
@@ -105,11 +107,12 @@ public class ProductosDAO {
     }
 
     public int insertarRetornarId(Productos producto) {
-        String sql = "INSERT INTO productos (nombre, cantidad, estatus) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO productos (nombre, cantidad, estatus, idCategoria) VALUES (?, ?, ?, ?)";
         try (PreparedStatement ps = conexion.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, producto.getNombre());
             ps.setInt(2, producto.getCantidad());
             ps.setBoolean(3, producto.isEstatus());
+            ps.setObject(4, producto.getIdCategoria());
             ps.executeUpdate();
             ResultSet rs = ps.getGeneratedKeys();
             if (rs.next()) {
@@ -223,7 +226,8 @@ public class ProductosDAO {
                         rs.getInt("idProducto"),
                         rs.getString("nombre"),
                         rs.getInt("cantidad"),
-                        rs.getBoolean("estatus")
+                        rs.getBoolean("estatus"),
+                        rs.getObject("idCategoria", Integer.class)
                 );
             }
 

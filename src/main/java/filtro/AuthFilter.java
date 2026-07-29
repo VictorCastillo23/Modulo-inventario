@@ -24,7 +24,7 @@ import seguridad.CsrfTokens;
  *
  * @author Victor
  */
-@WebFilter(urlPatterns = {"/ProductosController", "/Productos/*"})
+@WebFilter(urlPatterns = {"/ProductosController", "/Productos/*", "/CategoriasController", "/Categorias/*"})
 public class AuthFilter implements Filter {
 
     @Override

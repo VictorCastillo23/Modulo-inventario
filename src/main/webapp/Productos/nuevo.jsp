@@ -50,6 +50,16 @@
                     </div>
                     <div class="invalid-feedback">El estatus es obligatorio.</div>
                 </div>
+
+                <div class="col-12 col-md-6">
+                    <label for="idCategoria" class="form-label">Categoría</label>
+                    <select id="idCategoria" name="idCategoria" class="form-select">
+                        <option value="">Sin categoría</option>
+                        <c:forEach var="categoria" items="${listaCategorias}">
+                            <option value="${categoria.id}"><c:out value="${categoria.nombre}"/></option>
+                        </c:forEach>
+                    </select>
+                </div>
             </div>
 
             <div class="d-flex justify-content-end gap-2 mt-4">
