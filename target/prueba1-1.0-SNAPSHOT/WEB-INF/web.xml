@@ -7,5 +7,65 @@
         <session-timeout>
             30
         </session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+            <!-- Defaults to false for localhost/HTTP development. Set to true only
+                 once the app is served over HTTPS — a Secure cookie is silently
+                 dropped by the browser on a plain HTTP connection, which would
+                 break login entirely on localhost. See README "Deploying beyond
+                 localhost" for the checklist to flip this safely. -->
+            <secure>false</secure>
+        </cookie-config>
+        <!-- Kills ;jsessionid=... URL-rewriting fallback, which would otherwise
+             leak the session id into logs, browser history, and Referer headers. -->
+        <tracking-mode>COOKIE</tracking-mode>
     </session-config>
+
+    <!--
+        SEC-06 / HTTPS enforcement — commented out by design for local/portfolio
+        development. Uncomment this block ONLY when deploying behind TLS (see
+        README "Deploying beyond localhost"): without a TLS listener in front of
+        Tomcat, CONFIDENTIAL transport-guarantee causes Tomcat to redirect every
+        request to an HTTPS port that does not exist, breaking the app.
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Entire Application</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <user-data-constraint>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+    -->
+
+    <!--
+        SEC-08 — generic catch-all error page. Any uncaught exception
+        (including config.Conexion's IllegalStateException on missing
+        DB_URL/DB_USER/DB_PASSWORD, SEC-01) and the error statuses used by
+        AuthFilter's CSRF check (403) and InventoryRequestValidator's
+        rejections (400), plus the GET/POST split's unknown-accion branch
+        (405) and a plain 404, all render this single generic page instead of
+        the Tomcat default stack-trace page.
+    -->
+    <error-page>
+        <exception-type>java.lang.Exception</exception-type>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>400</error-code>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>403</error-code>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>404</error-code>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
+    <error-page>
+        <error-code>405</error-code>
+        <location>/WEB-INF/error.jsp</location>
+    </error-page>
 </web-app>
