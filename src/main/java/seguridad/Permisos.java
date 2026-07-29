@@ -17,7 +17,7 @@ package seguridad;
  * here:
  * <ul>
  *   <li>{@code Productos/index.jsp}</li>
- *   <li>{@code Productos/modificar.jsp}</li>
+ *   <li>{@code Productos/salida.jsp}</li>
  *   <li>{@code Productos/historial.jsp}</li>
  * </ul>
  */

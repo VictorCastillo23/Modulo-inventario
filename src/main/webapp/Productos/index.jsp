@@ -19,12 +19,6 @@
         <c:if test="${permisos.agregar_productos}">
             <a class="btn btn-primary btn-sm btn-erp" href="ProductosController?accion=nuevo">Nuevo producto</a>
         </c:if>
-        <c:if test="${permisos.ver_salida}">
-            <a class="btn btn-outline-primary btn-sm btn-erp" href="ProductosController?accion=salida_productos">Salidas</a>
-        </c:if>
-        <c:if test="${permisos.ver_historico}">
-            <a class="btn btn-outline-secondary btn-sm btn-erp" href="ProductosController?accion=historial">Histórico</a>
-        </c:if>
     </div>
 </div>
 
@@ -47,7 +41,7 @@
     <div class="card-body">
 
         <c:if test="${permisos.aumentar_inventario || permisos.baja_reactivar_producto}">
-            <form action="ProductosController" method="post" class="needs-validation" novalidate>
+            <form action="ProductosController" method="post" class="needs-validation" novalidate data-guard data-confirm="¿Confirma guardar los cambios? Esta acción no se puede deshacer.">
                 <input type="hidden" name="accion" value="guardarCambios"/>
                 <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}"/>
 
@@ -61,17 +55,16 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th class="text-end">Cantidad actual</th>
-                                <c:if test="${permisos.aumentar_inventario}"><th style="width: 220px;">Cantidad a agregar</th></c:if>
-                                <c:if test="${permisos.baja_reactivar_producto}"><th style="width: 220px;">Estatus</th></c:if>
+                                <c:if test="${permisos.aumentar_inventario}"><th class="col-action">Cantidad a agregar</th></c:if>
+                                <c:if test="${permisos.baja_reactivar_producto}"><th class="col-action">Estatus</th></c:if>
                                 </tr>
                             </thead>
                             <tbody>
                             <c:forEach var="producto" items="${lista}">
                                 <tr>
-                            <input type="hidden" name="id[]" value="${producto.id}"/>
-                            <input type="hidden" name="modificado[]" value="false" class="flag-modificado"/>
-
                             <td>
+                                <input type="hidden" name="id[]" value="${producto.id}"/>
+                                <input type="hidden" name="modificado[]" value="false" class="flag-modificado"/>
                                 <div class="fw-semibold"><c:out value="${producto.nombre}"/></div>
                             </td>
 
@@ -81,7 +74,9 @@
 
                             <c:if test="${permisos.aumentar_inventario}">
                                 <td>
+                                    <label class="visually-hidden" for="cantidad-${producto.id}">Cantidad a agregar para <c:out value="${producto.nombre}"/></label>
                                     <input
+                                        id="cantidad-${producto.id}"
                                         type="number"
                                         name="cantidad[]"
                                         class="form-control cantidad-input"
@@ -104,12 +99,14 @@
                                         <span class="status-pill">
                                             <span class="status-dot ${producto.estatus ? 'status-dot--ok' : 'status-dot--off'} status-dot"></span>
                                             <span class="status-text ${producto.estatus ? 'text-success' : 'text-danger'}">
-                                                <c:out value="${producto.estatus ? 'Activo' : 'Inactivo'}"/>
+                                                <i class="bi ${producto.estatus ? 'bi-check-circle-fill' : 'bi-x-circle-fill'} me-1" aria-hidden="true"></i><c:out value="${producto.estatus ? 'Activo' : 'Inactivo'}"/>
                                             </span>
                                         </span>
 
                                         <div class="form-check form-switch">
+                                            <label class="visually-hidden" for="estatus-${producto.id}">Cambiar estatus de <c:out value="${producto.nombre}"/></label>
                                             <input class="form-check-input estatus-input"
+                                                   id="estatus-${producto.id}"
                                                    type="checkbox"
                                                    data-index="${producto.id}"
                                                    data-valor-inicial="${producto.estatus ? 'true' : 'false'}"
@@ -152,137 +149,8 @@
             </div>
         </c:if>
 
-        <div id="uxAlert" class="alert alert-warning d-none mt-3" role="alert"></div>
     </div>
 </div>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-
-        let uxAlertTimeout = null;
-
-        function showUxAlert(message) {
-            const box = document.getElementById('uxAlert');
-            if (!box) return;
-
-            box.textContent = message;
-            box.classList.remove('d-none');
-            box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-            if (uxAlertTimeout) {
-                clearTimeout(uxAlertTimeout);
-            }
-
-            uxAlertTimeout = setTimeout(function () {
-                box.classList.add('d-none');
-            }, 2000);
-        }
-
-
-        function actualizarEstadoVisual(fila, checkbox) {
-            const texto = fila.querySelector('.status-text');
-            const punto = fila.querySelector('.status-dot');
-
-            if (!texto || !punto)
-                return;
-
-            if (checkbox.checked) {
-                texto.textContent = "Activo";
-                texto.classList.remove("text-danger");
-                texto.classList.add("text-success");
-
-                punto.classList.remove("status-dot--off");
-                punto.classList.add("status-dot--ok");
-            } else {
-                texto.textContent = "Inactivo";
-                texto.classList.remove("text-success");
-                texto.classList.add("text-danger");
-
-                punto.classList.remove("status-dot--ok");
-                punto.classList.add("status-dot--off");
-            }
-        }
-
-        function evaluarFila(fila) {
-
-            const cantidadInput = fila.querySelector('.cantidad-input');
-            const estatusInput = fila.querySelector('.estatus-input');
-            const estatusHidden = fila.querySelector('.estatus-hidden');
-            const flag = fila.querySelector('.flag-modificado');
-
-            if (!flag)
-                return;
-
-            let huboCambio = false;
-
-            if (cantidadInput) {
-                const valor = parseInt(cantidadInput.value, 10) || 0;
-                if (valor > 0) {
-                    huboCambio = true;
-                }
-            }
-            if (estatusInput) {
-
-                const valorInicial = String(estatusInput.dataset.valorInicial).trim().toLowerCase() === "true";
-
-                const valorActual = estatusInput.checked;
-
-
-                if (estatusHidden) {
-                    estatusHidden.value = valorActual;
-                }
-
-                if (valorActual !== valorInicial) {
-                    huboCambio = true;
-                }
-
-                actualizarEstadoVisual(fila, estatusInput);
-            }
-
-            flag.value = huboCambio ? "true" : "false";
-            fila.classList.toggle("table-warning", huboCambio);
-        }
-
-        document.querySelectorAll('.cantidad-input, .estatus-input').forEach(function (input, index) {
-            input.addEventListener('input', function () {
-                const fila = this.closest('tr');
-                const productoId = fila.querySelector('input[name="id[]"]')?.value;
-                if (this.classList.contains('cantidad-input')) {
-                    if (this.value.startsWith('-')) {
-                        showUxAlert('No puede reducir la cantidad. Solo se permite incrementar el valor actual.');
-                        this.value = 0;
-                    }
-                }
-                evaluarFila(fila);
-            });
-
-            input.addEventListener('change', function () {
-
-                const fila = this.closest('tr');
-                const productoId = fila.querySelector('input[name="id[]"]')?.value;
-
-                if (this.classList.contains('cantidad-input')) {
-
-                    let valor = Number(this.value);
-
-                    if (isNaN(valor) || valor < 0) {
-                        showUxAlert('Cantidad inválida.');
-                        this.value = 0;
-                    }
-                }
-
-                if (this.classList.contains('estatus-input')) {
-                    console.log("Estado checked actual:", this.checked);
-                    console.log("Valor inicial dataset:", this.dataset.valorInicial);
-                }
-
-                console.log("Evaluando fila...");
-                evaluarFila(fila);
-                console.groupEnd();
-            });
-
-        });
-
-    });
-</script>
+<script src="${pageContext.request.contextPath}/assets/js/productos-index.js"></script>
 
 <jsp:include page="/WEB-INF/jspf/layout-bottom.jspf" />

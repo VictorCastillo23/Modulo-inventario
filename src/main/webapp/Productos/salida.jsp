@@ -1,6 +1,6 @@
-<%-- 
-    Document   : modificar
-    Created on : 9 feb 2026, 7:32:42 p.m.
+<%--
+    Document   : salida
+    Created on : 9 feb 2026, 7:32:42 p.m.
     Author     : Victor
 --%>
 
@@ -16,9 +16,6 @@
     </div>
     <div class="page-actions d-flex flex-wrap gap-2">
         <a class="btn btn-outline-secondary btn-sm btn-erp" href="ProductosController">Volver</a>
-        <c:if test="${permisos.ver_historico}">
-            <a class="btn btn-outline-secondary btn-sm btn-erp" href="ProductosController?accion=historial">Histórico</a>
-        </c:if>
     </div>
 </div>
 <div id="uxAlert" class="alert alert-danger d-none mb-3" role="alert"></div>
@@ -40,7 +37,7 @@
     <div class="card-body">
 
         <c:if test="${permisos.sacar_inventario}">
-            <form action="ProductosController" method="post" class="needs-validation" novalidate>
+            <form action="ProductosController" method="post" class="needs-validation" novalidate data-guard data-confirm="¿Confirma retirar el inventario indicado? Esta acción no se puede deshacer.">
                 <input type="hidden" name="accion" value="guardarSalidas"/>
                 <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}"/>
 
@@ -54,17 +51,21 @@
                             <tr>
                                 <th>Nombre</th>
                                 <th class="text-end">Cantidad actual</th>
-                                <th style="width: 240px;">Cantidad a retirar</th>
+                                <th class="col-action">Cantidad a retirar</th>
                             </tr>
                         </thead>
                         <tbody>
                             <c:forEach var="producto" items="${lista}">
                                 <tr>
-                                    <input type="hidden" name="id[]" value="${producto.id}"/>
-                                    <td class="fw-semibold"><c:out value="${producto.nombre}"/></td>
+                                    <td class="fw-semibold">
+                                        <input type="hidden" name="id[]" value="${producto.id}"/>
+                                        <c:out value="${producto.nombre}"/>
+                                    </td>
                                     <td class="text-end"><span class="badge text-bg-light"><c:out value="${producto.cantidad}"/></span></td>
                                     <td>
+                                        <label class="visually-hidden" for="retiro-${producto.id}">Cantidad a retirar de <c:out value="${producto.nombre}"/></label>
                                         <input
+                                            id="retiro-${producto.id}"
                                             type="number"
                                             name="cantidad[]"
                                             class="form-control cantidad-input"
@@ -90,47 +91,9 @@
             </div>
         </c:if>
 
-        <div id="uxAlert" class="alert alert-warning d-none mt-3" role="alert"></div>
     </div>
 </div>
 
-<script>
-        let uxAlertTimeout = null;
-
-    function showUxAlert(message) {
-        const box = document.getElementById('uxAlert');
-        if (!box) return;
-
-        box.textContent = message;
-        box.classList.remove('d-none');
-        box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
-        if (uxAlertTimeout) {
-            clearTimeout(uxAlertTimeout);
-        }
-
-        uxAlertTimeout = setTimeout(function () {
-            box.classList.add('d-none');
-        }, 2000);
-    }
-
-    document.querySelectorAll('.cantidad-input').forEach(function(input) {
-        var valorMinimo = parseInt(input.getAttribute('data-valor-inicial'), 10) || 0;
-        input.addEventListener('change', function() {
-            var valorActual = parseInt(this.value, 10);
-            if (isNaN(valorActual) || valorActual < 0 || valorActual > valorMinimo) {
-                showUxAlert('Retiro inválido. El monto máximo es el valor actual (' + valorMinimo + ').');
-                this.value = 0;
-            }
-        });
-        input.addEventListener('input', function() {
-            var valorActual = parseInt(this.value, 10);
-            if (!isNaN(valorActual) && (valorActual < 0 || valorActual > valorMinimo)) {
-                showUxAlert('Retiro inválido. El monto máximo es el valor actual (' + valorMinimo + ').');
-                this.value = 0;
-            }
-        });
-    });
-</script>
+<script src="${pageContext.request.contextPath}/assets/js/productos-salida.js"></script>
 
 <jsp:include page="/WEB-INF/jspf/layout-bottom.jspf" />

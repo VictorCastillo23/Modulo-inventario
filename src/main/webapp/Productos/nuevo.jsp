@@ -21,7 +21,7 @@
 
 <div class="card card-soft">
     <div class="card-body">
-        <form action="ProductosController" method="POST" autocomplete="off" class="needs-validation" novalidate>
+        <form action="ProductosController" method="POST" autocomplete="off" class="needs-validation" novalidate data-guard>
             <input type="hidden" name="accion" value="insertar"/>
             <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}"/>
             <div class="row g-3">

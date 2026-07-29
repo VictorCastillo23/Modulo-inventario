@@ -66,7 +66,7 @@ public class ProductosController extends HttpServlet {
             }
             List<Productos> listaProductos = productosDAO.listarProductosActivos();
             request.setAttribute("lista", listaProductos);
-            dispatcher = request.getRequestDispatcher("Productos/modificar.jsp");
+            dispatcher = request.getRequestDispatcher("Productos/salida.jsp");
         } else if ("historial".equals(accion)) {
             if (!tienePermiso(permisos, Permisos.VER_HISTORICO)) {
                 redirigirSinPermiso(request, response);
@@ -212,7 +212,7 @@ public class ProductosController extends HttpServlet {
             List<Productos> listaProductos = productosDAO.listarProductosActivos();
             request.setAttribute("lista", listaProductos);
             request.setAttribute("rechazados", outcome.rejectedIds());
-            dispatcher = request.getRequestDispatcher("Productos/modificar.jsp");
+            dispatcher = request.getRequestDispatcher("Productos/salida.jsp");
         } else {
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
                     "Acción no soportada para POST: " + accion);
