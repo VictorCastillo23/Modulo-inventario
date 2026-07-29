@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "if": "Bash(git commit*)",
+            "statusMessage": "Revisando legibilidad del diff en stage (R2 Readability, advisory)...",
+            "timeout": 90,
+            "prompt": "Actuás como R2 Readability, revisor read-only de solo lectura. Corré `git diff --cached` para ver el diff en stage de este commit (proyecto Java EE/Jakarta EE 10, Servlets/JSP/JDBC, sin tests automatizados). Reglas: señalá números mágicos que deberían ser constantes nombradas; listas de parámetros largas que deberían ser un objeto; lógica duplicada entre clases/métodos; código muerto (bloques comentados, imports sin usar, ramas inalcanzables, métodos nunca invocados); nombres que ocultan la intención o exigen comentarios extensos. Para reclamos de 'demasiado complejo' exigite evidencia concreta (función/rama/patrón exacto citado). NO señales un helper chico o una constante inline ya clara y autoexplicativa. Esto es un chequeo ADVISORY liviano — nunca bloqueante. Tu salida final SIEMPRE debe tener continue:true. FORMATO DE SALIDA — CRÍTICO: tu respuesta completa debe ser EXCLUSIVAMENTE un único objeto JSON válido, sin texto antes ni después, sin bloques de código markdown (nada de ```), sin explicaciones ni saludos. La primera y única línea de tu respuesta empieza con `{` y termina con `}`. Si hay hallazgos: `{\"continue\": true, \"systemMessage\": \"<lista de hallazgos: severity BLOCKER|CRITICAL|WARNING|SUGGESTION, archivo, evidencia, por qué importa>\"}`. Si no hay hallazgos: `{\"continue\": true}` y nada más."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "if": "Bash(git push*)",
+            "statusMessage": "Revisando legibilidad de los commits salientes (R2 Readability, advisory)...",
+            "timeout": 90,
+            "prompt": "Actuás como R2 Readability, revisor read-only. Determiná los commits que este push va a subir (por ejemplo con `git log @{u}..HEAD --oneline` si hay upstream, o `git log origin/main..HEAD --oneline` como fallback) y revisá su diff acumulado (proyecto Java EE/Jakarta EE 10, Servlets/JSP/JDBC, sin tests automatizados). Reglas: señalá números mágicos que deberían ser constantes nombradas; listas de parámetros largas que deberían ser un objeto; lógica duplicada entre clases/métodos; código muerto (bloques comentados, imports sin usar, ramas inalcanzables, métodos nunca invocados); nombres que ocultan la intención o exigen comentarios extensos. Para reclamos de 'demasiado complejo' exigite evidencia concreta. NO señales un helper chico o una constante inline ya clara y autoexplicativa. Esto es un chequeo ADVISORY liviano — nunca bloqueante. Tu salida final SIEMPRE debe tener continue:true. FORMATO DE SALIDA — CRÍTICO: tu respuesta completa debe ser EXCLUSIVAMENTE un único objeto JSON válido, sin texto antes ni después, sin bloques de código markdown (nada de ```), sin explicaciones ni saludos. La primera y única línea de tu respuesta empieza con `{` y termina con `}`. Si hay hallazgos: `{\"continue\": true, \"systemMessage\": \"<lista de hallazgos: severity BLOCKER|CRITICAL|WARNING|SUGGESTION, archivo, evidencia, por qué importa>\"}`. Si no hay upstream ni rama remota detectable, o no hay hallazgos: `{\"continue\": true}` y nada más."
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "agent",
+            "if": "Bash(gh pr create*)",
+            "model": "sonnet",
+            "statusMessage": "Evaluando si este PR necesita el fan-out completo 4R (risk/resilience/readability/reliability)...",
+            "timeout": 300,
+            "prompt": "Este es un proyecto Java EE (Jakarta EE 10) con Servlets en src/main/java/controlador/, filtro de auth en src/main/java/filtro/AuthFilter.java, DAOs JDBC crudos en src/main/java/modelo/, conexión hardcodeada en src/main/java/config/Conexion.java, y SQL de esquema/seed en SCRIPTS/. No hay CI/CD ni tests automatizados. Paso 1: determiná la rama base (probablemente main) y corré `git diff <base>...HEAD --stat` y `git diff <base>...HEAD --name-only` para medir líneas cambiadas y archivos tocados. Paso 2: decidí si aplica el fan-out completo 4R. Aplica si el diff supera 400 líneas cambiadas EN TOTAL, O si toca alguno de: src/main/java/filtro/**, src/main/java/config/Conexion.java, cualquier archivo bajo modelo/*DAO.java, SCRIPTS/**, o cualquier ruta con auth/security/update/payments en el nombre. Paso 3a: si NO aplica el fan-out, devolvé solo {\"continue\": true} sin más texto (no hace falta revisar nada más acá). Paso 3b: si SÍ aplica, revisá el diff completo aplicando las cuatro lentes, una por una, sobre el mismo diff: (R1 Risk) señalá secretos/tokens/credenciales hardcodeadas en código; bloqueá si la autorización se aplica solo en el frontend/JSP sin verificación de backend; señalá si hay concatenación de SQL en vez de PreparedStatement parametrizado; señalá si falta sanitización de output hacia HTML. (R4 Resilience) señalá fallas sin fallback/retry/degradación; señalá si no hay forma de detectar/loggear errores en producción (recordá que este proyecto usa System.out.println como único logging); señalá si un release puede regresionar sin ninguna alerta u observabilidad. (R2 Readability) señalá números mágicos, listas de parámetros largas, lógica duplicada, código muerto, nombres que ocultan intención — con evidencia concreta, no un helper chico y claro. (R3 Reliability) bloqueá cambios de comportamiento sin ningún test que valide el contrato (ojo: este proyecto no tiene tests, así que señalalo pero no bloquees solo por eso salvo que el propio PR diga que agregó tests y no es cierto); señalá edge cases faltantes obvios (nulls, cantidades negativas, permisos ausentes). Cada hallazgo necesita severity (BLOCKER|CRITICAL|WARNING|SUGGESTION), archivo, evidencia y por qué importa. Si una lente no encuentra nada, no la menciones. Al final: si hay al menos un BLOCKER o CRITICAL, devolvé JSON con continue:false, decision:\"block\", reason con el resumen de los hallazgos bloqueantes, y systemMessage con el detalle completo de las 4 lentes. Si solo hay WARNING/SUGGESTION o nada, devolvé continue:true y systemMessage con el resumen (o {\"continue\":true} a secas si no hay ningún hallazgo). FORMATO DE SALIDA — CRÍTICO: en cualquiera de los dos casos (paso 3a o 3b), tu respuesta completa debe ser EXCLUSIVAMENTE un único objeto JSON válido, sin texto antes ni después, sin bloques de código markdown (nada de ```), sin explicaciones ni saludos. La primera y única línea de tu respuesta empieza con `{` y termina con `}`."
+          }
+        ]
+      }
+    ]
+  }
+}
