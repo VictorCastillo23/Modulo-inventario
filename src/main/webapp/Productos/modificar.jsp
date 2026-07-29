@@ -32,6 +32,7 @@
         <c:if test="${permisos.sacar_inventario}">
             <form action="ProductosController" method="post" class="needs-validation" novalidate>
                 <input type="hidden" name="accion" value="guardarSalidas"/>
+                <input type="hidden" name="csrfToken" value="${sessionScope.csrfToken}"/>
 
                 <div class="d-flex justify-content-end mb-3">
                     <button type="submit" class="btn btn-success btn-sm btn-erp">Guardar cambios</button>

@@ -23,16 +23,19 @@ import seguridad.Permisos;
 @WebServlet(name = "ProductosController", urlPatterns = {"/ProductosController"})
 public class ProductosController extends HttpServlet {
 
+    /**
+     * Serves read-only actions only ({@code ""}, {@code nuevo},
+     * {@code salida_productos}, {@code historial}). Mutating actions are
+     * handled exclusively by {@link #doPost}; an unrecognized action here
+     * returns {@code 405} instead of silently falling through.
+     */
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        ProductosDAO productosDAO = null;
-        productosDAO = new ProductosDAO();
-        String accion;
-        RequestDispatcher dispatcher = null;
-
-        accion = request.getParameter("accion");
+        ProductosDAO productosDAO = new ProductosDAO();
+        String accion = request.getParameter("accion");
+        RequestDispatcher dispatcher;
         Map<String, Boolean> permisos = obtenerPermisos(request);
 
         if (accion == null || accion.isEmpty()) {
@@ -53,7 +56,50 @@ public class ProductosController extends HttpServlet {
                 return;
             }
             dispatcher = request.getRequestDispatcher("Productos/nuevo.jsp");
-        } else if ("insertar".equals(accion)) {
+        } else if ("salida_productos".equals(accion)) {
+            if (!tienePermiso(permisos, Permisos.VER_SALIDA)) {
+                redirigirSinPermiso(request, response);
+                return;
+            }
+            List<Productos> listaProductos = productosDAO.listarProductosActivos();
+            request.setAttribute("lista", listaProductos);
+            dispatcher = request.getRequestDispatcher("Productos/modificar.jsp");
+        } else if ("historial".equals(accion)) {
+            if (!tienePermiso(permisos, Permisos.VER_HISTORICO)) {
+                redirigirSinPermiso(request, response);
+                return;
+            }
+            String tipo = request.getParameter("tipo");
+            HistoricoDAO historicoDAO = new HistoricoDAO();
+            request.setAttribute("listaHistorial", historicoDAO.listar(tipo));
+            request.setAttribute("tipoFiltro", tipo != null ? tipo : "");
+            dispatcher = request.getRequestDispatcher("Productos/historial.jsp");
+        } else {
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+                    "Acción no soportada para GET: " + accion);
+            return;
+        }
+
+        dispatcher.forward(request, response);
+    }
+
+    /**
+     * Serves mutating actions only ({@code insertar}, {@code guardarCambios},
+     * {@code guardarSalidas}). Does NOT delegate to {@link #doGet} — an
+     * unrecognized action returns {@code 405}. CSRF token validation for
+     * every authenticated POST happens upstream in {@code AuthFilter}, before
+     * this method (and any DAO call) ever runs.
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        ProductosDAO productosDAO = new ProductosDAO();
+        String accion = request.getParameter("accion");
+        RequestDispatcher dispatcher;
+        Map<String, Boolean> permisos = obtenerPermisos(request);
+
+        if ("insertar".equals(accion)) {
             if (!tienePermiso(permisos, Permisos.AGREGAR_PRODUCTOS)) {
                 redirigirSinPermiso(request, response);
                 return;
@@ -77,11 +123,9 @@ public class ProductosController extends HttpServlet {
 
             request.setAttribute("lista", listaProductos);
             dispatcher = request.getRequestDispatcher("Productos/index.jsp");
-        } else if ("guardarCambios".equals(request.getParameter("accion"))) {
-            System.out.println("Entrando en guardr camios");
+        } else if ("guardarCambios".equals(accion)) {
             if (!tienePermiso(permisos, Permisos.AUMENTAR_INVENTARIO) && !tienePermiso(permisos, Permisos.BAJA_REACTIVAR_PRODUCTO)) {
                 redirigirSinPermiso(request, response);
-                            System.out.println("no tiene permisos de guardr camios");
                 return;
             }
 
@@ -96,8 +140,6 @@ public class ProductosController extends HttpServlet {
                 int cantidadAgregar = Integer.parseInt(cantidades[i]);
                 boolean nuevoEstatus = Boolean.parseBoolean(estatus[i]);
                 boolean fueModificado = Boolean.parseBoolean(modificados[i]);
-
-                System.out.println("ID: " + id +" | Retiro: " + cantidadAgregar +" | Estatus: " + nuevoEstatus +" | Modificado: " + fueModificado);
 
                 if (fueModificado) {
                     if (cantidadAgregar > 0 && Boolean.TRUE.equals(permisos.get(Permisos.AUMENTAR_INVENTARIO))) {
@@ -119,14 +161,6 @@ public class ProductosController extends HttpServlet {
             request.setAttribute("lista", listaProductos);
             dispatcher = request.getRequestDispatcher("Productos/index.jsp");
 
-        } else if ("salida_productos".equals(accion)) {
-            if (!tienePermiso(permisos, Permisos.VER_SALIDA)) {
-                redirigirSinPermiso(request, response);
-                return;
-            }
-            List<Productos> listaProductos = productosDAO.listarProductosActivos();
-            request.setAttribute("lista", listaProductos);
-            dispatcher = request.getRequestDispatcher("Productos/modificar.jsp");
         } else if ("guardarSalidas".equals(accion)) {
             if (!tienePermiso(permisos, Permisos.SACAR_INVENTARIO)) {
                 redirigirSinPermiso(request, response);
@@ -139,8 +173,6 @@ public class ProductosController extends HttpServlet {
                 for (int i = 0; i < ids.length; i++) {
                     int idProducto = Integer.parseInt(ids[i]);
                     int cantidadRetirar = Integer.parseInt(cantidades[i]);
-
-                    //System.out.println("Producto ID: " + idProducto +" | Cantidad a retirar: " + cantidadRetirar);
 
                     if (cantidadRetirar > 0) {
                         productosDAO.retirarCantidad(idProducto, cantidadRetirar);
@@ -155,25 +187,13 @@ public class ProductosController extends HttpServlet {
             List<Productos> listaProductos = productosDAO.listarProductosActivos();
             request.setAttribute("lista", listaProductos);
             dispatcher = request.getRequestDispatcher("Productos/modificar.jsp");
-        } else if ("historial".equals(accion)) {
-            if (!tienePermiso(permisos, Permisos.VER_HISTORICO)) {
-                redirigirSinPermiso(request, response);
-                return;
-            }
-            String tipo = request.getParameter("tipo");
-            HistoricoDAO historicoDAO = new HistoricoDAO();
-            request.setAttribute("listaHistorial", historicoDAO.listar(tipo));
-            request.setAttribute("tipoFiltro", tipo != null ? tipo : "");
-            dispatcher = request.getRequestDispatcher("Productos/historial.jsp");
+        } else {
+            response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
+                    "Acción no soportada para POST: " + accion);
+            return;
         }
 
         dispatcher.forward(request, response);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        doGet(request, response);
     }
 
     private Integer obtenerIdUsuario(HttpServletRequest request) {

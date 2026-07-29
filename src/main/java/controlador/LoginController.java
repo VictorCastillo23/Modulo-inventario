@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpSession;
 import modelo.PermisoDAO;
 import modelo.Usuario;
 import modelo.UsuarioDAO;
+import seguridad.CsrfTokens;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -76,6 +77,9 @@ public class LoginController extends HttpServlet {
                 permisos.put(p, true);
             }
             session.setAttribute("permisos", permisos);
+            // SEC-03 prerequisite: mint a per-session CSRF token so AuthFilter has
+            // something to validate every authenticated POST against.
+            session.setAttribute(CsrfTokens.SESSION_ATTRIBUTE, CsrfTokens.generate());
             response.sendRedirect(request.getContextPath() + "/ProductosController");
         } else {
             request.setAttribute("error", "Usuario o contraseña incorrectos.");
