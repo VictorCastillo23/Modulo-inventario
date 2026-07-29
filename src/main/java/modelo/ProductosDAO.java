@@ -139,17 +139,32 @@ public class ProductosDAO {
         }
     }
 
+    /**
+     * Withdraws {@code cantidadRetirar} units from {@code idProducto}, using
+     * {@code AND cantidad >= ?} as an atomic, race-free floor: the UPDATE
+     * itself only ever matches a row when there is enough stock, so no
+     * separate read-then-write window exists for a concurrent writer to
+     * exploit.
+     *
+     * @return {@code true} iff exactly one row was updated (stock was
+     *         sufficient and the debit was applied); {@code false} means
+     *         insufficient stock or an unknown product id — the caller
+     *         MUST NOT write a {@code Historico} row in that case (see
+     *         SEC-04 design: the SQL predicate itself is verified manually
+     *         against a live database, not unit-tested).
+     */
     public boolean retirarCantidad(int idProducto, int cantidadRetirar) {
 
         PreparedStatement ps;
 
         try {
             ps = conexion.prepareStatement(
-                "UPDATE productos SET cantidad = cantidad - ? WHERE idProducto = ?"
+                "UPDATE productos SET cantidad = cantidad - ? WHERE idProducto = ? AND cantidad >= ?"
             );
 
             ps.setInt(1, cantidadRetirar);
             ps.setInt(2, idProducto);
+            ps.setInt(3, cantidadRetirar);
 
             int filas = ps.executeUpdate();
 
@@ -157,7 +172,7 @@ public class ProductosDAO {
                             " | Retiro: " + cantidadRetirar +
                             " | Filas afectadas: " + filas);
 
-            return filas > 0;
+            return filas == 1;
 
         } catch (Exception e) {
             System.out.println("Error al retirar producto " + idProducto);

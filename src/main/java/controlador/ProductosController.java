@@ -14,7 +14,10 @@ import java.util.Map;
 import modelo.HistoricoDAO;
 import modelo.Productos;
 import modelo.ProductosDAO;
+import seguridad.InventoryRequestValidator;
 import seguridad.Permisos;
+import seguridad.ValidationResult;
+import seguridad.WithdrawalOutcome;
 
 /**
  *
@@ -134,6 +137,13 @@ public class ProductosController extends HttpServlet {
             String[] estatus = request.getParameterValues("estatus[]");
             String[] modificados = request.getParameterValues("modificado[]");
 
+            ValidationResult validation = InventoryRequestValidator.validateEdit(ids, cantidades, estatus, modificados);
+            if (!validation.isValid()) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                        "Datos de edición inválidos: " + validation.error());
+                return;
+            }
+
             for (int i = 0; i < ids.length; i++) {
 
                 int id = Integer.parseInt(ids[i]);
@@ -169,23 +179,39 @@ public class ProductosController extends HttpServlet {
             String[] ids = request.getParameterValues("id[]");
             String[] cantidades = request.getParameterValues("cantidad[]");
 
-            if (ids != null && cantidades != null) {
-                for (int i = 0; i < ids.length; i++) {
-                    int idProducto = Integer.parseInt(ids[i]);
-                    int cantidadRetirar = Integer.parseInt(cantidades[i]);
+            ValidationResult validation = InventoryRequestValidator.validateWithdrawal(ids, cantidades);
+            if (!validation.isValid()) {
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST,
+                        "Datos de salida inválidos: " + validation.error());
+                return;
+            }
 
-                    if (cantidadRetirar > 0) {
-                        productosDAO.retirarCantidad(idProducto, cantidadRetirar);
+            WithdrawalOutcome outcome = new WithdrawalOutcome();
+            for (int i = 0; i < ids.length; i++) {
+                int idProducto = Integer.parseInt(ids[i]);
+                int cantidadRetirar = Integer.parseInt(cantidades[i]);
+
+                if (cantidadRetirar > 0) {
+                    boolean aplicado = productosDAO.retirarCantidad(idProducto, cantidadRetirar);
+                    if (aplicado) {
+                        outcome.applied(idProducto);
+                        // SEC-04 fix: only log a Historico "Salida" row when the DAO
+                        // actually updated exactly one row. Previously this write fired
+                        // unconditionally, logging a phantom movement even on a no-op
+                        // (rejected) update.
                         Integer idUsuario = obtenerIdUsuario(request);
                         if (idUsuario != null) {
                             HistoricoDAO historicoDAO = new HistoricoDAO();
                             historicoDAO.insertar(idUsuario, idProducto, "Salida", cantidadRetirar);
                         }
+                    } else {
+                        outcome.rejected(idProducto);
                     }
                 }
             }
             List<Productos> listaProductos = productosDAO.listarProductosActivos();
             request.setAttribute("lista", listaProductos);
+            request.setAttribute("rechazados", outcome.rejectedIds());
             dispatcher = request.getRequestDispatcher("Productos/modificar.jsp");
         } else {
             response.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,

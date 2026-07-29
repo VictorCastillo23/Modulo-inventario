@@ -23,6 +23,16 @@
 </div>
 <div id="uxAlert" class="alert alert-danger d-none mb-3" role="alert"></div>
 
+<c:if test="${not empty rechazados}">
+    <div class="alert alert-warning" role="alert">
+        <strong>Atención.</strong> No se pudo retirar inventario suficiente para los productos con id:
+        <c:forEach var="idRechazado" items="${rechazados}" varStatus="loop">
+            <c:out value="${idRechazado}"/><c:if test="${!loop.last}">, </c:if>
+        </c:forEach>
+        (stock insuficiente al momento de aplicar el retiro).
+    </div>
+</c:if>
+
 <div class="card card-soft">
     <div class="card-header py-3">
         <div class="fw-semibold">Retirar inventario</div>

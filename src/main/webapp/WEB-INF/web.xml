@@ -7,5 +7,35 @@
         <session-timeout>
             30
         </session-timeout>
+        <cookie-config>
+            <http-only>true</http-only>
+            <!-- Defaults to false for localhost/HTTP development. Set to true only
+                 once the app is served over HTTPS — a Secure cookie is silently
+                 dropped by the browser on a plain HTTP connection, which would
+                 break login entirely on localhost. See README "Deploying beyond
+                 localhost" for the checklist to flip this safely. -->
+            <secure>false</secure>
+        </cookie-config>
+        <!-- Kills ;jsessionid=... URL-rewriting fallback, which would otherwise
+             leak the session id into logs, browser history, and Referer headers. -->
+        <tracking-mode>COOKIE</tracking-mode>
     </session-config>
+
+    <!--
+        SEC-06 / HTTPS enforcement — commented out by design for local/portfolio
+        development. Uncomment this block ONLY when deploying behind TLS (see
+        README "Deploying beyond localhost"): without a TLS listener in front of
+        Tomcat, CONFIDENTIAL transport-guarantee causes Tomcat to redirect every
+        request to an HTTPS port that does not exist, breaking the app.
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>Entire Application</web-resource-name>
+            <url-pattern>/*</url-pattern>
+        </web-resource-collection>
+        <user-data-constraint>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+    -->
 </web-app>
