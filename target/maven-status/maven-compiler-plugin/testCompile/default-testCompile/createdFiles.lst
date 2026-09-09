@@ -1,5 +1,0 @@
-seguridad\InventoryRequestValidatorTest.class
-seguridad\CsrfTokensTest.class
-seguridad\PasswordHasherTest.class
-harness\BuildHarnessTest.class
-seguridad\WithdrawalOutcomeTest.class

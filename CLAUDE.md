@@ -40,7 +40,7 @@ Classic Servlet/JSP MVC, no framework (no Spring, no JSF, no JPA in practice des
 
 ### Permission model
 
-Permission names checked in Java (`seguridad/Permisos.java` constants) and JSP EL (e.g. `${permisos.agregar_productos}`) are lowercase and now match the names seeded in `SCRIPTS/inventario_roles.sql` (fixed by the SEC-07 remediation, migration `SCRIPTS/migrations/2026-07-28_01_permisos_rename.sql`). `PermisoDAO` does a direct string match with no case normalization — the JSPs mirror `Permisos`' constants as string literals with no compile-time link, so verify casing/wording still matches between the SQL seed, `Permisos`, and the JSPs when touching any of the three.
+Permission names checked in Java (`seguridad/Permisos.java` constants) and JSP EL (e.g. `${permisos.agregar_productos}`) are lowercase and match the names seeded in `SCRIPTS/inventario_roles.sql` (the SEC-07 remediation renaming these from UPPER_SNAKE to lowercase is folded directly into that base script). `PermisoDAO` does a direct string match with no case normalization — the JSPs mirror `Permisos`' constants as string literals with no compile-time link, so verify casing/wording still matches between the SQL seed, `Permisos`, and the JSPs when touching any of the three.
 
 ### Session shape
 
